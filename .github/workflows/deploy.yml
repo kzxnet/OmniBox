@@ -33,4 +33,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           # 添加 --debug 标记，输出更详细的部署日志，方便排查问题
-          command: deploy --debug
+          command: deploy
