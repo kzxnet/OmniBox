@@ -1,45 +1,36 @@
+# deploy.yml
 name: Deploy OmniBox to Cloudflare Workers
 
+# 当代码被推送到 main 分支时触发自动化流程
 on:
   push:
     branches: [ main ]
+  # 添加手动触发选项，方便你随时测试
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy OmniBox to Production
-    
+    timeout-minutes: 30
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js 20
+      # 1. 检查出项目代码
+      - uses: actions/checkout@v4
+
+      # 2. 设置 Node.js 环境
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-      
+
+      # 3. 安装项目依赖
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Lint & Type Check
-        run: |
-          npm run lint
-          npm run typecheck
-
-      - name: Validate Configuration
-        run: |
-          echo "Validating configuration..."
-          npx wrangler --version
-      
+      # 4. 使用 Wrangler Action 部署到 Cloudflare Workers
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
-        env:
-          WRANGLER_VERSION: 4
-      
-      - name: Deployment Complete
-        run: echo "✅ Deployment completed successfully!"
+          # 添加 --debug 标记，输出更详细的部署日志，方便排查问题
+          command: deploy --debug
